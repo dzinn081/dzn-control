@@ -90,14 +90,22 @@ function Overview({ userId }) {
   }, [userId]);
 
   const income = data.transactions
-    .filter((item) => item.type === 'entrada')
+    .filter((item) => item.type === 'income')
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
   const expenses = data.transactions
-    .filter((item) => item.type === 'despesa')
+    .filter((item) => item.type === 'expense')
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
   const balance = income - expenses;
+
+  const incomeCount = data.transactions.filter(
+    (item) => item.type === 'income'
+  ).length;
+
+  const expensesCount = data.transactions.filter(
+    (item) => item.type === 'expense'
+  ).length;
 
   const debtTotal = data.debts.reduce(
     (sum, item) =>
@@ -164,13 +172,13 @@ function Overview({ userId }) {
         <article className="stat-card">
           <span>Total de entradas</span>
           <strong>{currency(income)}</strong>
-          <small>{data.transactions.filter(x => x.type === 'entrada').length} registros</small>
+          <small>{incomeCount} registros</small>
         </article>
 
         <article className="stat-card">
           <span>Total de despesas</span>
           <strong>{currency(expenses)}</strong>
-          <small>{data.transactions.filter(x => x.type === 'despesa').length} registros</small>
+          <small>{expensesCount} registros</small>
         </article>
 
         <article className="stat-card">
@@ -220,9 +228,9 @@ function Overview({ userId }) {
                 </div>
 
                 <strong className={
-                  item.type === 'entrada' ? 'income-value' : 'expense-value'
+                  item.type === 'income' ? 'income-value' : 'expense-value'
                 }>
-                  {item.type === 'entrada' ? '+' : '−'} {currency(item.amount)}
+                  {item.type === 'income' ? '+' : '−'} {currency(item.amount)}
                 </strong>
               </article>
             ))}
