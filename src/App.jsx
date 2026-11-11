@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
 import Auth from './Auth.jsx';
@@ -21,47 +20,64 @@ export default function App() {
   const [active, setActive] = useState('Visão geral');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    let isMounted = true;
+
+    async function restoreSession() {
+      const { data } = await supabase.auth.getSession();
+      if (!isMounted) return;
       setSession(data.session);
       setChecking(false);
+    }
+
+    restoreSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (isMounted) {
+        setSession(nextSession);
+      }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    setSession(null);
   }
 
   if (checking) {
-    return <main className="app"><p>Carregando DZN CONTROL...</p></main>;
+    return (
+      <main className="app-shell loading-shell">
+        <div className="loading-card">Carregando DZN CONTROL...</div>
+      </main>
+    );
   }
 
   if (!session) {
     return <Auth />;
   }
 
+  const userName = session.user?.user_metadata?.full_name || session.user?.email || 'Usuário';
+
   return (
-    <main className="app">
+    <main className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="diamond">◆</span>
+          <span className="brand-mark">◆</span>
           <div>
             <strong>DZN CONTROL</strong>
             <small>CONTROLE FINANCEIRO</small>
           </div>
         </div>
 
-        <nav>
-          {sections.map(section => (
+        <nav className="nav" aria-label="Menu principal">
+          {sections.map((section) => (
             <button
               key={section}
+              type="button"
               className={active === section ? 'nav-item active' : 'nav-item'}
               onClick={() => setActive(section)}
             >
@@ -70,9 +86,7 @@ export default function App() {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          Seu dinheiro sob controle.
-        </div>
+        <div className="sidebar-footer">Seu dinheiro sob controle.</div>
       </aside>
 
       <section className="content">
@@ -83,8 +97,8 @@ export default function App() {
           </div>
 
           <div className="user-area">
-            <span>{session.user.email}</span>
-            <button onClick={handleLogout}>Sair</button>
+            <span>{userName}</span>
+            <button type="button" onClick={handleLogout}>Sair</button>
           </div>
         </header>
 
@@ -92,43 +106,42 @@ export default function App() {
           <>
             <div className="welcome">
               <span>SEJA BEM-VINDO AO DZN CONTROL</span>
-              <h2>Organize seu dinheiro.<br />Construa seu futuro.</h2>
-              <p>Tenha seus ganhos, gastos e objetivos em um só lugar.</p>
+              <h2>Organize seus recursos.<br />Construa seu futuro.</h2>
+              <p>Centralize ganhos, gastos e objetivos em um painel seguro e intuitivo.</p>
             </div>
 
-            <div className="cards">
+            <div className="cards-grid">
               <article className="stat-card">
-                <span>Saldo atual</span>
-                <strong>R$ 0,00</strong>
-                <small>Seu saldo disponível</small>
+                <span>Fluxo</span>
+                <strong>Financeiro</strong>
+                <small>Organização por categoria</small>
               </article>
 
               <article className="stat-card">
-                <span>Entradas</span>
-                <strong>R$ 0,00</strong>
-                <small>Total recebido</small>
+                <span>Controle</span>
+                <strong>Em tempo real</strong>
+                <small>Dados protegidos por usuário</small>
               </article>
 
               <article className="stat-card">
-                <span>Despesas</span>
-                <strong>R$ 0,00</strong>
-                <small>Total gasto</small>
+                <span>Objetivos</span>
+                <strong>Planejamento</strong>
+                <small>Seu próximo passo financeiro</small>
               </article>
 
               <article className="stat-card">
-                <span>Metas</span>
-                <strong>0</strong>
-                <small>Objetivos cadastrados</small>
+                <span>Segurança</span>
+                <strong>Supabase</strong>
+                <small>Autenticação e isolamento por conta</small>
               </article>
             </div>
 
-            <section className="panel">
+            <section className="panel quick-actions">
               <h3>Ações rápidas</h3>
-              <div className="actions">
-                <button onClick={() => setActive('Lançamentos')}>+ Adicionar ganho</button>
-                <button onClick={() => setActive('Lançamentos')}>− Registrar gasto</button>
-                <button onClick={() => setActive('Metas')}>◎ Criar meta</button>
-                <button onClick={() => setActive('Dívidas')}>↗ Registrar pagamento</button>
+              <div className="actions-row">
+                <button type="button" onClick={() => setActive('Lançamentos')}>+ Novo lançamento</button>
+                <button type="button" onClick={() => setActive('Metas')}>◎ Planejar meta</button>
+                <button type="button" onClick={() => setActive('Dívidas')}>↗ Revisar dívidas</button>
               </div>
             </section>
           </>
@@ -138,11 +151,11 @@ export default function App() {
           <section className="panel section-panel">
             <span className="eyebrow">DZN CONTROL</span>
             <h2>{active}</h2>
-            <p>Esta área será desenvolvida na próxima etapa do projeto.</p>
+            <p>Esta área está pronta para receber a próxima etapa de desenvolvimento do produto.</p>
           </section>
         )}
 
-        <footer>DZN CONTROL © 2026 · Seu dinheiro, suas decisões.</footer>
+        <footer className="app-footer">DZN CONTROL © 2026 · Seu dinheiro, suas decisões.</footer>
       </section>
     </main>
   );

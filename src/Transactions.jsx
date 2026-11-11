@@ -16,7 +16,7 @@ function formatCurrency(value) {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value + 'T00:00:00').toLocaleDateString('pt-BR');
+  return new Date(`${value}T00:00:00`).toLocaleDateString('pt-BR');
 }
 
 export default function Transactions() {
@@ -34,14 +34,25 @@ export default function Transactions() {
     setLoading(true);
     setMessage('');
 
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData.user) {
+      setItems([]);
+      setLoading(false);
+      setMessage('Sua sessão expirou. Faça login novamente.');
+      return;
+    }
+
     const { data, error } = await supabase
       .from('transactions')
-      .select('id, type, description, category, amount, transaction_date')
+      .select('id, type, description, category, amount, transaction_date, created_at')
+      .eq('user_id', userData.user.id)
       .order('transaction_date', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) {
       setMessage('Não foi possível carregar os lançamentos: ' + error.message);
+      setItems([]);
     } else {
       setItems(data || []);
     }
@@ -50,14 +61,25 @@ export default function Transactions() {
   }
 
   useEffect(() => {
-    loadTransactions();
+    let isMounted = true;
+
+    async function fetchTransactions() {
+      if (!isMounted) return;
+      await loadTransactions();
+    }
+
+    fetchTransactions();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setMessage('');
 
-    const numericAmount = Number(amount.replace(',', '.'));
+    const numericAmount = Number(String(amount).replace(',', '.'));
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       setMessage('Informe um valor maior que zero.');
       return;
@@ -104,7 +126,7 @@ export default function Transactions() {
         <form className="transaction-form" onSubmit={handleSubmit}>
           <label>
             Tipo
-            <select value={type} onChange={event => setType(event.target.value)}>
+            <select value={type} onChange={(event) => setType(event.target.value)}>
               <option value="entrada">Entrada</option>
               <option value="despesa">Despesa</option>
             </select>
@@ -114,7 +136,7 @@ export default function Transactions() {
             Descrição
             <input
               value={description}
-              onChange={event => setDescription(event.target.value)}
+              onChange={(event) => setDescription(event.target.value)}
               placeholder="Ex.: salário, mercado, corrida..."
               required
             />
@@ -124,7 +146,7 @@ export default function Transactions() {
             Categoria
             <input
               value={category}
-              onChange={event => setCategory(event.target.value)}
+              onChange={(event) => setCategory(event.target.value)}
               placeholder="Ex.: trabalho, alimentação..."
               required
             />
@@ -137,7 +159,7 @@ export default function Transactions() {
               min="0.01"
               step="0.01"
               value={amount}
-              onChange={event => setAmount(event.target.value)}
+              onChange={(event) => setAmount(event.target.value)}
               placeholder="0,00"
               required
             />
@@ -148,7 +170,7 @@ export default function Transactions() {
             <input
               type="date"
               value={transactionDate}
-              onChange={event => setTransactionDate(event.target.value)}
+              onChange={(event) => setTransactionDate(event.target.value)}
               required
             />
           </label>
@@ -170,11 +192,13 @@ export default function Transactions() {
           <p>Nenhum lançamento cadastrado ainda.</p>
         ) : (
           <div className="transaction-items">
-            {items.map(item => (
+            {items.map((item) => (
               <article className="transaction-item" key={item.id}>
                 <div>
                   <strong>{item.description}</strong>
-                  <small>{item.category || 'Sem categoria'} · {formatDate(item.transaction_date)}</small>
+                  <small>
+                    {item.category || 'Sem categoria'} · {formatDate(item.transaction_date)}
+                  </small>
                 </div>
                 <strong className={item.type === 'entrada' ? 'income-value' : 'expense-value'}>
                   {item.type === 'entrada' ? '+' : '−'} {formatCurrency(item.amount)}

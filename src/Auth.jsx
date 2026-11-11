@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from './lib/supabase.js';
 
@@ -21,17 +20,22 @@ export default function Auth() {
           email,
           password
         });
+
         if (error) throw error;
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { full_name: name }
+            data: {
+              full_name: name.trim()
+            }
           }
         });
+
         if (error) throw error;
-        setMessage('Cadastro realizado! Confira seu e-mail para confirmar a conta.');
+
+        setMessage('Cadastro realizado com sucesso. Verifique seu e-mail para confirmar a conta.');
       }
     } catch (error) {
       setMessage(error.message || 'Não foi possível realizar a operação.');
@@ -52,8 +56,8 @@ export default function Auth() {
         <h1>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h1>
         <p className="auth-description">
           {isLogin
-            ? 'Entre para acessar seu controle financeiro.'
-            : 'Comece a organizar seu dinheiro hoje.'}
+            ? 'Entre para acessar seu painel financeiro.'
+            : 'Comece a gerenciar suas finanças com clareza e segurança.'}
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -63,7 +67,7 @@ export default function Auth() {
               <input
                 type="text"
                 value={name}
-                onChange={event => setName(event.target.value)}
+                onChange={(event) => setName(event.target.value)}
                 placeholder="Seu nome"
                 required
               />
@@ -75,7 +79,7 @@ export default function Auth() {
             <input
               type="email"
               value={email}
-              onChange={event => setEmail(event.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               placeholder="seu@email.com"
               required
             />
@@ -86,7 +90,7 @@ export default function Auth() {
             <input
               type="password"
               value={password}
-              onChange={event => setPassword(event.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               placeholder="Mínimo de 6 caracteres"
               minLength={6}
               required
@@ -94,19 +98,14 @@ export default function Auth() {
           </label>
 
           <button type="submit" disabled={loading}>
-            {loading
-              ? 'Aguarde...'
-              : isLogin
-                ? 'Entrar'
-                : 'Criar minha conta'}
+            {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Criar minha conta'}
           </button>
         </form>
 
         {message && <p className="auth-message">{message}</p>}
 
         <p className="auth-switch">
-          {isLogin ? 'Ainda não tem uma conta?' : 'Já possui uma conta?'}
-          {' '}
+          {isLogin ? 'Ainda não tem uma conta?' : 'Já possui uma conta?'}{' '}
           <button
             type="button"
             onClick={() => {
