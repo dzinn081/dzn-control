@@ -153,3 +153,126 @@
     text-overflow: ellipsis;
   }
 }
+
+/* DZN CONTROL - LANÇAMENTOS */
+
+.transactions-page {
+  display: grid;
+  gap: 22px;
+  width: 100%;
+}
+
+.transaction-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.transaction-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #c8c3d8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.transaction-form input,
+.transaction-form select {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid #302b40;
+  border-radius: 10px;
+  outline: none;
+  background: #100d1b;
+  color: #fff;
+  font-size: 14px;
+}
+
+.transaction-form input:focus,
+.transaction-form select:focus {
+  border-color: #9b6cff;
+  box-shadow: 0 0 0 3px rgba(155, 108, 255, 0.12);
+}
+
+.transaction-form button {
+  grid-column: 1 / -1;
+  min-height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: #8955e9;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.transaction-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.transaction-message {
+  margin-top: 16px;
+  color: #c5a7ff;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.transaction-items {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #302b40;
+  border-radius: 12px;
+  background: #100d1b;
+}
+
+.transaction-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.transaction-item div strong {
+  color: #fff;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.transaction-item small {
+  color: #9690a8;
+  font-size: 12px;
+}
+
+.income-value {
+  color: #45d69a;
+  white-space: nowrap;
+}
+
+.expense-value {
+  color: #ff7185;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .transaction-form {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
