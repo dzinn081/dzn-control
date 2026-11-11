@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
 import Auth from './Auth.jsx';
+import Transactions from './Transactions.jsx';
 
 const sections = [
   'Visão geral',
@@ -131,6 +132,8 @@ export default function App() {
               </div>
             </section>
           </>
+        ) : active === 'Lançamentos' ? (
+          <Transactions />
         ) : (
           <section className="panel section-panel">
             <span className="eyebrow">DZN CONTROL</span>
@@ -143,4 +146,4 @@ export default function App() {
       </section>
     </main>
   );
-            }
+}
